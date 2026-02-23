@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Continue to DC2050</title>
+    <title>Continue</title>
 
-    <!-- Bootstrap CSS -->
     <link 
         rel="stylesheet" 
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
@@ -83,26 +82,22 @@
 
 <body>
 
-    <!-- DC Header -->
     <div class="dc-header">District of Columbia &#8226; Office of Planning</div>
 
-    <!-- Stars -->
     <div class="dc-stars">
         <span class="star">★</span>
         <span class="star">★</span>
         <span class="star">★</span>
     </div>
 
-    <!-- Stripes -->
     <div class="dc-stripe"></div>
     <div class="dc-stripe"></div>
 
     <div class="container">
 
-        <h2>Continue to DC2050</h2>
+        <h2 id="titleText">Continue</h2>
         <p>Thank you for scanning. Tap below to proceed.</p>
 
-        <!-- Continue Button -->
         <a id="continueLink" href="#" class="btn btn-primary btn-lg continue-btn disabled">
             Please wait...
         </a>
@@ -115,9 +110,7 @@
 <script>
 async function sendScanData(payload) {
     try {
-        
-
-        await fetch("https://prod-08.usgovtexas.logic.azure.us:443/workflows/3766c841413e41bc99ffa55f35ff0c8e/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=pIJyusbsfRnMk_dJDsFS4_sIDvIjjv3LgaXA_oX0PR0", {
+        await fetch("YOUR_FLOW_URL_HERE", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
@@ -173,15 +166,28 @@ async function processScan() {
 }
 
 function enableContinueButton(project) {
+    const params = new URLSearchParams(window.location.search);
+
+    // NEW: dynamic project site URL
+    const projectSite = params.get("projectSite");
+
+    // fallback map (only used if projectSite= is missing)
     const redirectMap = {
         "dc2050": "https://dc2050.dc.gov",
         "visionzero": "https://visionzero.dc.gov",
         "parks": "https://dpr.dc.gov"
     };
 
+    const finalUrl = projectSite || redirectMap[project] || "https://dc.gov";
+
     const continueBtn = document.getElementById("continueLink");
-    continueBtn.href = redirectMap[project] || "https://dc.gov";
-    continueBtn.innerText = "Continue";
+    const titleText = document.getElementById("titleText");
+
+    // Button text + title text
+    continueBtn.innerText = `Continue to ${project.toUpperCase()}`;
+    titleText.innerText = `Continue to ${project.toUpperCase()}`;
+
+    continueBtn.href = finalUrl;
     continueBtn.classList.remove("disabled");
 }
 
@@ -190,4 +196,3 @@ processScan();
 
 </body>
 </html>
-
