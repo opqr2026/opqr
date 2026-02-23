@@ -95,9 +95,7 @@
 
     <div class="container">
 
-        <!-- NEW: Title will be updated dynamically -->
         <h2 id="titleText">Continue</h2>
-
         <p>Thank you for scanning. Tap below to proceed.</p>
 
         <a id="continueLink" href="#" class="btn btn-primary btn-lg continue-btn disabled">
@@ -112,11 +110,16 @@
 <script>
 async function sendScanData(payload) {
     try {
-        await fetch("https://prod-08.usgovtexas.logic.azure.us:443/workflows/3766c841413e41bc99ffa55f35ff0c8e/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=pIJyusbsfRnMk_dJDsFS4_sIDvIjjv3LgaXA_oX0PR0", {
+        const res = await fetch("https://prod-08.usgovtexas.logic.azure.us:443/workflows/3766c841413e41bc99ffa55f35ff0c8e/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=pIJyusbsfRnMk_dJDsFS4_sIDvIjjv3LgaXA_oX0PR0", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
         });
+
+        // Log any flow errors (helps diagnose issues)
+        if (!res.ok) {
+            console.error("Flow returned error:", res.status, await res.text());
+        }
     } catch (err) {
         console.error("Failed to send scan data:", err);
     }
@@ -170,23 +173,19 @@ async function processScan() {
 function enableContinueButton(project) {
     const params = new URLSearchParams(window.location.search);
 
-    // NEW: dynamic project site URL
     const projectSite = params.get("projectSite");
 
-    // fallback map (only used if projectSite= is missing)
     const redirectMap = {
         "dc2050": "https://dc2050.dc.gov",
         "visionzero": "https://visionzero.dc.gov",
         "parks": "https://dpr.dc.gov"
     };
 
-    // NEW: final redirect URL
     const finalUrl = projectSite || redirectMap[project] || "https://dc.gov";
 
     const continueBtn = document.getElementById("continueLink");
     const titleText = document.getElementById("titleText");
 
-    // NEW: dynamic button + title text
     continueBtn.innerText = `Continue to ${project.toUpperCase()}`;
     titleText.innerText = `Continue to ${project.toUpperCase()}`;
 
