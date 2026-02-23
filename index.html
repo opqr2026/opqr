@@ -73,6 +73,11 @@
             color: #777;
             padding-bottom: 30px;
         }
+
+        .disabled {
+            pointer-events: none;
+            opacity: 0.6;
+        }
     </style>
 </head>
 
@@ -85,8 +90,7 @@
     <div class="dc-stars">
         <span class="star">★</span>
         <span class="star">★</span>
-    <span class="star">★</span>
-
+        <span class="star">★</span>
     </div>
 
     <!-- Stripes -->
@@ -99,8 +103,8 @@
         <p>Thank you for scanning. Tap below to proceed.</p>
 
         <!-- Continue Button -->
-        <a id="continueLink" href="#" class="btn btn-primary btn-lg continue-btn">
-            Continue
+        <a id="continueLink" href="#" class="btn btn-primary btn-lg continue-btn disabled">
+            Please wait...
         </a>
 
         <div class="footer">
@@ -110,11 +114,15 @@
 
 <script>
 async function sendScanData(payload) {
-    await fetch("https://prod-08.usgovtexas.logic.azure.us:443/workflows/3766c841413e41bc99ffa55f35ff0c8e/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=pIJyusbsfRnMk_dJDsFS4_sIDvIjjv3LgaXA_oX0PR0", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-    });
+    try {
+        await fetch("https://prod-08.usgovtexas.logic.azure.us:443/workflows/3766c841413e41bc99ffa55f35ff0c8e/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=pIJyusbsfRnMk_dJDsFS4_sIDvIjjv3LgaXA_oX0PR0", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+    } catch (err) {
+        console.error("Failed to send scan data:", err);
+    }
 }
 
 async function processScan() {
@@ -127,69 +135,56 @@ async function processScan() {
     const timestamp = new Date().toISOString();
     const userAgent = navigator.userAgent;
 
-    // If geo=true, request location
+    let payload = {
+        poster,
+        postedAtLocation,
+        lat: null,
+        lon: null,
+        accuracy: null,
+        locationPermission: "not_requested",
+        timestamp,
+        project,
+        userAgent
+    };
+
     if (geo === "true" && navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             async (pos) => {
-                await sendScanData({
-                    poster,
-                    postedAtLocation,
-                    lat: pos.coords.latitude,
-                    lon: pos.coords.longitude,
-                    accuracy: pos.coords.accuracy,
-                    locationPermission: "granted",
-                    timestamp,
-                    project,
-                    userAgent
-                });
+                payload.lat = pos.coords.latitude;
+                payload.lon = pos.coords.longitude;
+                payload.accuracy = pos.coords.accuracy;
+                payload.locationPermission = "granted";
+
+                await sendScanData(payload);
+                enableContinueButton(project);
             },
-            async (err) => {
-                await sendScanData({
-                    poster,
-                    postedAtLocation,
-                    lat: null,
-                    lon: null,
-                    accuracy: null,
-                    locationPermission: "denied",
-                    timestamp,
-                    project,
-                    userAgent
-                });
+            async () => {
+                payload.locationPermission = "denied";
+                await sendScanData(payload);
+                enableContinueButton(project);
             }
         );
-    } 
-    else {
-        // No geo requested or unsupported
-        await sendScanData({
-            poster,
-            postedAtLocation,
-            lat: null,
-            lon: null,
-            accuracy: null,
-            locationPermission: "not_requested",
-            timestamp,
-            project,
-            userAgent
-        });
+    } else {
+        await sendScanData(payload);
+        enableContinueButton(project);
     }
 }
 
+function enableContinueButton(project) {
+    const redirectMap = {
+        "dc2050": "https://dc2050.dc.gov",
+        "visionzero": "https://visionzero.dc.gov",
+        "parks": "https://dpr.dc.gov"
+    };
+
+    const continueBtn = document.getElementById("continueLink");
+    continueBtn.href = redirectMap[project] || "https://dc.gov";
+    continueBtn.innerText = "Continue";
+    continueBtn.classList.remove("disabled");
+}
+
 processScan();
-
-// Redirect logic
-const params = new URLSearchParams(window.location.search);
-const project = params.get("project") || "dc2050";
-
-const redirectMap = {
-    "dc2050": "https://dc2050.dc.gov",
-    "visionzero": "https://visionzero.dc.gov",
-    "parks": "https://dpr.dc.gov"
-};
-
-document.getElementById("continueLink").href =
-    redirectMap[project] || "https://dc.gov";
 </script>
 
 </body>
 </html>
-
