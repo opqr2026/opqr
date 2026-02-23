@@ -115,6 +115,8 @@
 <script>
 async function sendScanData(payload) {
     try {
+        
+
         await fetch("https://prod-08.usgovtexas.logic.azure.us:443/workflows/3766c841413e41bc99ffa55f35ff0c8e/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=pIJyusbsfRnMk_dJDsFS4_sIDvIjjv3LgaXA_oX0PR0", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -188,3 +190,4 @@ processScan();
 
 </body>
 </html>
+
