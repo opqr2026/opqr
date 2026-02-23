@@ -95,7 +95,9 @@
 
     <div class="container">
 
+        <!-- NEW: Title will be updated dynamically -->
         <h2 id="titleText">Continue</h2>
+
         <p>Thank you for scanning. Tap below to proceed.</p>
 
         <a id="continueLink" href="#" class="btn btn-primary btn-lg continue-btn disabled">
@@ -168,22 +170,23 @@ async function processScan() {
 function enableContinueButton(project) {
     const params = new URLSearchParams(window.location.search);
 
-    // Dynamic project site URL
+    // NEW: dynamic project site URL
     const projectSite = params.get("projectSite");
 
-    // Fallback map
+    // fallback map (only used if projectSite= is missing)
     const redirectMap = {
         "dc2050": "https://dc2050.dc.gov",
         "visionzero": "https://visionzero.dc.gov",
         "parks": "https://dpr.dc.gov"
     };
 
+    // NEW: final redirect URL
     const finalUrl = projectSite || redirectMap[project] || "https://dc.gov";
 
     const continueBtn = document.getElementById("continueLink");
     const titleText = document.getElementById("titleText");
 
-    // Dynamic button + title text
+    // NEW: dynamic button + title text
     continueBtn.innerText = `Continue to ${project.toUpperCase()}`;
     titleText.innerText = `Continue to ${project.toUpperCase()}`;
 
@@ -196,4 +199,3 @@ processScan();
 
 </body>
 </html>
-
