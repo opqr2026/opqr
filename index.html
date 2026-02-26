@@ -111,7 +111,7 @@
 async function sendScanData(payload) {
     try {
                                  
-        const res = await fetch("https://prod-19.usgovtexas.logic.azure.us:443/workflows/52de63aef94040f4a7d938d6d7fa7311/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=guKg_NmPvPnP2gEOkUwc3hNA4H2gpCCIXQtHGcll1j4", {
+        const res = await fetch("https://prod-00.usgovtexas.logic.azure.us:443/workflows/5066846513a24e9bad1a48ef15f1d2f6/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=uvWG9QBMK1rWELtKcH5DM26sVwxF4JGxlwvWlq0iptE", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
@@ -199,5 +199,6 @@ processScan();
 
 </body>
 </html>
+
 
 
